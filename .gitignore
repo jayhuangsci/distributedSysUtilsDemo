@@ -1,0 +1,16 @@
+.tools/
+target/
+demo-output/
+benchmark-output/
+*.log
+*.class
+*.jar
+.idea/
+.vscode/
+.bsp/
+.metals/
+.DS_Store
+*.tar.gz
+spark-warehouse/
+.sparkStaging/
+derby.log
