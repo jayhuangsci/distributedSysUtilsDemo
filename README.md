@@ -15,7 +15,7 @@ Turn a sparse movie-rating matrix into movie statistics, user activity, agreemen
 
 ## Run the complete demo
 
-On Linux or macOS, install **JDK 11** and set `JAVA_HOME`. The wrapper downloads Maven 3.9.11; no Hadoop or Spark installation is required for local execution. Allow roughly 2 GB of JVM heap plus operating system overhead. The first build downloads the engine libraries.
+On Linux or macOS, install **JDK 11** and **unzip**, and set `JAVA_HOME`. The wrapper downloads Maven 3.9.11 and verifies its ZIP checksum; no Hadoop or Spark installation is required for local execution. Allow roughly 2 GB of JVM heap plus operating system overhead. The first build downloads the engine libraries.
 
 ```bash
 git clone https://github.com/jayhuangsci/distributedSysUtilsDemo.git

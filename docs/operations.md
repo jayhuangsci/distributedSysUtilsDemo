@@ -2,7 +2,7 @@
 
 ## Local prerequisites
 
-Use a JDK 11 installation, not only a JRE, for building. `JAVA_HOME` should point to the JDK directory. The wrapper pins Maven 3.9.11. Internet access is needed for the first Maven build and Docker image build. The local launchers reserve up to 2 GB of JVM heap.
+Use a JDK 11 installation, not only a JRE, for building. `JAVA_HOME` should point to the JDK directory. The wrapper pins Maven 3.9.11 and its ZIP checksum. Install `unzip` on Linux/macOS so the Unix wrapper uses that pinned archive; without it the upstream wrapper switches archive formats. The Docker build installs `unzip`, and the Windows wrapper uses PowerShell extraction. Internet access is needed for the first Maven build and Docker image build. The local launchers reserve up to 2 GB of JVM heap.
 
 ```bash
 java -version
