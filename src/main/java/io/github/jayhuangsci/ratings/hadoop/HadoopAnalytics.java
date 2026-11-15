@@ -168,7 +168,10 @@ public final class HadoopAnalytics {
     public static final class TopRatersMapper extends RowsMapper<Text> {
         @Override protected void emit(MovieRow row, Context context) throws IOException, InterruptedException {
             if (row.ratings().isEmpty()) { context.write(new Text(row.title()), new Text("0:")); }
-            for (MovieRow.Rating rating : row.ratings()) { context.write(new Text(row.title()), new Text(rating.score() + ":" + rating.user())); }
+            int maximum = row.ratings().stream().mapToInt(MovieRow.Rating::score).max().orElse(0);
+            for (MovieRow.Rating rating : row.ratings()) {
+                if (rating.score() == maximum) { context.write(new Text(row.title()), new Text(rating.score() + ":" + rating.user())); }
+            }
         }
     }
     public static final class TopRatersReducer extends Reducer<Text, Text, NullWritable, Text> {

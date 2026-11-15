@@ -20,6 +20,7 @@
     <dependency><groupId>org.apache.hadoop</groupId><artifactId>hadoop-client-runtime</artifactId><version>${hadoop.version}</version></dependency>
     <dependency><groupId>org.apache.spark</groupId><artifactId>spark-core_2.12</artifactId><version>${spark.version}</version></dependency>
     <dependency><groupId>org.scala-lang</groupId><artifactId>scala-library</artifactId><version>${scala.version}</version></dependency>
+    <dependency><groupId>org.slf4j</groupId><artifactId>slf4j-api</artifactId><version>2.0.7</version></dependency>
     <dependency><groupId>org.junit.jupiter</groupId><artifactId>junit-jupiter</artifactId><version>${junit.version}</version><scope>test</scope></dependency>
   </dependencies>
   <build>
@@ -29,11 +30,11 @@
       <plugin>
         <groupId>net.alchim31.maven</groupId><artifactId>scala-maven-plugin</artifactId><version>4.9.2</version>
         <executions><execution><id>scala-compile</id><phase>process-classes</phase><goals><goal>compile</goal></goals></execution></executions>
-        <configuration><scalaVersion>${scala.version}</scalaVersion><sendJavaToScalac>false</sendJavaToScalac><args><arg>-deprecation</arg><arg>-feature</arg><arg>-unchecked</arg><arg>-target:jvm-11</arg></args></configuration>
+        <configuration><scalaVersion>${scala.version}</scalaVersion><sendJavaToScalac>false</sendJavaToScalac><args><arg>-deprecation</arg><arg>-feature</arg><arg>-unchecked</arg><arg>-release:11</arg></args></configuration>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId><artifactId>maven-surefire-plugin</artifactId><version>3.5.3</version>
-        <configuration><argLine>-Xmx2g --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.nio=ALL-UNNAMED --add-opens=java.base/sun.nio.ch=ALL-UNNAMED</argLine><environmentVariables><SPARK_LOCAL_IP>127.0.0.1</SPARK_LOCAL_IP></environmentVariables></configuration>
+        <configuration><argLine>-Xmx2g --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.nio=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/sun.nio.ch=ALL-UNNAMED</argLine><environmentVariables><SPARK_LOCAL_IP>127.0.0.1</SPARK_LOCAL_IP></environmentVariables></configuration>
       </plugin>
       <plugin><groupId>org.codehaus.mojo</groupId><artifactId>exec-maven-plugin</artifactId><version>3.5.0</version></plugin>
       <plugin>

@@ -104,6 +104,19 @@ class EngineParityTest {
             assertFalse(Files.exists(output));
         }
     }
+    @Test void minimumSupportFiltersPairsBeforeRanking() throws Exception {
+        Path input = temporary.resolve("support.csv");
+        Files.writeString(input, "A,5,4\nB,5,4\nC,5,3\nD,2,4\n");
+        for (String engine : Arrays.asList("hadoop", "spark")) {
+            for (String task : Arrays.asList("agreement", "recommend")) {
+                Path output = temporary.resolve(engine + "-support-" + task);
+                String[] options = {"--task", task, "--input", input.toString(), "--output", output.toString(),
+                        "--partitions", "3", "--top-k", "1", "--min-support", "2"};
+                run(engine, options);
+                assertEquals(task.equals("agreement") ? Collections.singletonList("A,B,2") : Arrays.asList("A,B,2,1", "B,A,2,1"), HadoopTest.lines(output));
+            }
+        }
+    }
     private static void run(String engine, String[] args) throws Exception {
         if (engine.equals("hadoop")) { HadoopAnalytics.run(HadoopTest.local(), args); }
         else { SparkAnalytics.run(spark, args); }

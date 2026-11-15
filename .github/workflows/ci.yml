@@ -9,19 +9,36 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - uses: actions/checkout@v6
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '11'
           cache: maven
       - name: Build and test
         run: ./mvnw --batch-mode verify
+      - name: Run documented demo and verify the original fixtures
+        run: |
+          ./scripts/run.sh demo sample_input/smalldata.txt target/demo-smoke 2 1
+          ./scripts/run.sh compare sample_output/Task1_sample.txt target/demo-smoke/1-hadoop-top-raters
+          ./scripts/run.sh compare sample_output/Task2_sample.txt target/demo-smoke/1-hadoop-total
+          ./scripts/run.sh compare sample_output/Task3_sample.txt target/demo-smoke/1-hadoop-user-counts
+          ./scripts/run.sh compare sample_output/Task4_sample.txt target/demo-smoke/1-hadoop-agreement
+          ./scripts/run.sh generate --movies 25 --users 12 --density 0.2 --seed 42 --output target/generated.csv
+          ./scripts/run.sh demo target/generated.csv target/generated-demo 3 1
+          ./scripts/benchmark.sh 12 8 0.25 1 2
+      - name: Verify the container demo
+        run: |
+          docker build --tag ratings-lab:ci .
+          docker run --rm ratings-lab:ci
       - name: Upload test evidence
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: verification-evidence
           path: |
             target/surefire-reports/
             target/parity-evidence/
+            target/demo-smoke/
+            target/generated-demo/
+            benchmark-output/
