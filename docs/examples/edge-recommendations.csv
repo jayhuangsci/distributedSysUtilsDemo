@@ -1,0 +1,10 @@
+"Film, with a comma","The ""Quoted"" Film",3,1
+"Film, with a comma",Apollo 13,2,2
+"The ""Quoted"" Film","Film, with a comma",3,1
+"The ""Quoted"" Film",Apollo 13,1,2
+Apocalypto,"Film, with a comma",1,2
+Apocalypto,Apollo 13,1,1
+Apollo 13,"Film, with a comma",2,1
+Apollo 13,Apocalypto,1,2
+The Lord of The Rings,"Film, with a comma",2,1
+The Lord of The Rings,Apocalypto,1,2

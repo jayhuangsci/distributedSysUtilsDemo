@@ -17,6 +17,10 @@ jobs:
           cache: maven
       - name: Build and test
         run: ./mvnw --batch-mode verify
+      - name: Verify checked-in result examples
+        run: |
+          diff -u docs/examples/edge-movie-stats.csv target/parity-evidence/movie-stats-p3.csv
+          diff -u docs/examples/edge-recommendations.csv target/parity-evidence/recommend-p3.csv
       - name: Run documented demo and verify the original fixtures
         run: |
           ./scripts/run.sh demo sample_input/smalldata.txt target/demo-smoke 2 1
