@@ -2,25 +2,24 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>io.github.jayhuangsci</groupId>
-  <artifactId>ratings-lab</artifactId>
-  <version>1.0.0</version>
-  <name>Ratings Lab</name>
-  <description>Movie ratings analytics with Java Hadoop MapReduce and Scala Spark</description>
+  <artifactId>hadoop-corpus-pipeline</artifactId>
+  <version>2.0.0</version>
+  <name>Hadoop Corpus Pipeline</name>
+  <description>Distributed raw-text preparation and JSONL training corpus export with Java and Hadoop</description>
   <url>https://github.com/jayhuangsci/distributedSysUtilsDemo</url>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.release>11</maven.compiler.release>
     <hadoop.version>3.4.2</hadoop.version>
-    <spark.version>3.5.7</spark.version>
-    <scala.version>2.12.18</scala.version>
+    <jackson.version>2.18.4</jackson.version>
     <junit.version>5.12.2</junit.version>
   </properties>
   <dependencies>
     <dependency><groupId>org.apache.hadoop</groupId><artifactId>hadoop-client-api</artifactId><version>${hadoop.version}</version></dependency>
     <dependency><groupId>org.apache.hadoop</groupId><artifactId>hadoop-client-runtime</artifactId><version>${hadoop.version}</version></dependency>
-    <dependency><groupId>org.apache.spark</groupId><artifactId>spark-core_2.12</artifactId><version>${spark.version}</version></dependency>
-    <dependency><groupId>org.scala-lang</groupId><artifactId>scala-library</artifactId><version>${scala.version}</version></dependency>
-    <dependency><groupId>org.slf4j</groupId><artifactId>slf4j-api</artifactId><version>2.0.7</version></dependency>
+    <dependency><groupId>com.fasterxml.jackson.core</groupId><artifactId>jackson-databind</artifactId><version>${jackson.version}</version></dependency>
+    <dependency><groupId>org.jsoup</groupId><artifactId>jsoup</artifactId><version>1.21.2</version></dependency>
+    <dependency><groupId>org.slf4j</groupId><artifactId>slf4j-simple</artifactId><version>1.7.36</version><scope>runtime</scope></dependency>
     <dependency><groupId>org.junit.jupiter</groupId><artifactId>junit-jupiter</artifactId><version>${junit.version}</version><scope>test</scope></dependency>
   </dependencies>
   <build>
@@ -28,18 +27,22 @@
       <plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-dependency-plugin</artifactId><version>3.8.1</version><executions><execution><id>runtime-classpath</id><phase>generate-resources</phase><goals><goal>build-classpath</goal></goals><configuration><includeScope>runtime</includeScope><outputFile>${project.build.directory}/classpath.txt</outputFile></configuration></execution></executions></plugin>
       <plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-compiler-plugin</artifactId><version>3.14.0</version></plugin>
       <plugin>
-        <groupId>net.alchim31.maven</groupId><artifactId>scala-maven-plugin</artifactId><version>4.9.2</version>
-        <executions><execution><id>scala-compile</id><phase>process-classes</phase><goals><goal>compile</goal></goals></execution></executions>
-        <configuration><scalaVersion>${scala.version}</scalaVersion><sendJavaToScalac>false</sendJavaToScalac><args><arg>-deprecation</arg><arg>-feature</arg><arg>-unchecked</arg><arg>-release:11</arg></args></configuration>
-      </plugin>
-      <plugin>
         <groupId>org.apache.maven.plugins</groupId><artifactId>maven-surefire-plugin</artifactId><version>3.5.3</version>
-        <configuration><argLine>-Xmx2g --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.nio=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/sun.nio.ch=ALL-UNNAMED</argLine><environmentVariables><SPARK_LOCAL_IP>127.0.0.1</SPARK_LOCAL_IP></environmentVariables></configuration>
+        <configuration><argLine>-Xmx1536m</argLine></configuration>
       </plugin>
       <plugin><groupId>org.codehaus.mojo</groupId><artifactId>exec-maven-plugin</artifactId><version>3.5.0</version></plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId><artifactId>maven-shade-plugin</artifactId><version>3.6.0</version>
-        <executions><execution><phase>package</phase><goals><goal>shade</goal></goals><configuration><createDependencyReducedPom>false</createDependencyReducedPom><artifactSet><includes><include>io.github.jayhuangsci:*</include></includes></artifactSet></configuration></execution></executions>
+        <executions><execution><phase>package</phase><goals><goal>shade</goal></goals><configuration>
+          <createDependencyReducedPom>false</createDependencyReducedPom>
+          <artifactSet><includes><include>com.fasterxml.jackson.core:*</include><include>org.jsoup:jsoup</include></includes></artifactSet>
+          <relocations>
+            <relocation><pattern>com.fasterxml.jackson</pattern><shadedPattern>io.github.jayhuangsci.corpus.internal.jackson</shadedPattern></relocation>
+            <relocation><pattern>org.jsoup</pattern><shadedPattern>io.github.jayhuangsci.corpus.internal.jsoup</shadedPattern></relocation>
+          </relocations>
+          <filters><filter><artifact>*:*</artifact><excludes><exclude>META-INF/*.SF</exclude><exclude>META-INF/*.RSA</exclude><exclude>META-INF/*.DSA</exclude><exclude>module-info.class</exclude><exclude>META-INF/versions/**/module-info.class</exclude></excludes></filter></filters>
+          <transformers><transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer"><mainClass>io.github.jayhuangsci.corpus.hadoop.CorpusPipeline</mainClass></transformer></transformers>
+        </configuration></execution></executions>
       </plugin>
     </plugins>
   </build>

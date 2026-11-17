@@ -1,0 +1,3 @@
+Training data preparation is a sequence of explicit transformations.
+Extract readable text, normalize whitespace, redact common sensitive patterns, and remove duplicates.
+The final export keeps complete document chunks in one deterministic dataset split.
