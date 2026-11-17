@@ -36,7 +36,8 @@ There are **two MapReduce jobs**: prepare/deduplicate, then tokenize/export. Red
 Install Docker with Linux containers and Docker Compose. Allocate approximately **6 GB of memory** for the demo cluster. The first build downloads and checksum-verifies Apache Hadoop 3.4.2.
 
 ```bash
-docker compose -f deploy/compose.yml up --detach --build --wait --wait-timeout 180
+docker compose -f deploy/compose.yml build namenode
+docker compose -f deploy/compose.yml up --detach --no-build --wait --wait-timeout 180
 docker compose -f deploy/compose.yml run --rm client /opt/demo/cluster-demo.sh
 ```
 
@@ -165,6 +166,8 @@ Files contain one valid JSON object per line. Empty splits have a directory but 
 | `schema_version`, `tokenizer` | Explicit record/tokenizer versions. |
 
 `_MANIFEST.json` contains parameters, job IDs, document-quality counters, deduplication counts, split/chunk counts, token counts including overlap, shuffle bytes, filesystem byte counts, and measured durations. Data shards are unordered; record IDs and explicit offsets carry identity/order within a document.
+
+See a [complete exported JSON record](docs/examples/training-record.json) and the [measured sample-run summary](docs/examples/README.md). The sample produces **7 unique documents and 13 chunks from 12 input documents**, with 2 duplicate copies removed and 3 documents rejected by quality rules.
 
 ## Submit to an existing cluster
 

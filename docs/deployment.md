@@ -7,12 +7,15 @@
 The build downloads Apache Hadoop 3.4.2's lean distribution from the Apache CDN, with an archive fallback, and verifies the published SHA-512 checksum. The lean distribution omits the unused AWS SDK bundle. The application JAR includes relocated Jackson/jsoup dependencies, leaving Hadoop to the cluster classpath. No Spark or Scala runtime is required.
 
 ```bash
-docker compose -f deploy/compose.yml up --detach --build --wait --wait-timeout 180
+docker compose -f deploy/compose.yml build namenode
+docker compose -f deploy/compose.yml up --detach --no-build --wait --wait-timeout 180
 docker compose -f deploy/compose.yml run --rm client /opt/demo/cluster-demo.sh
 docker compose -f deploy/compose.yml run --rm client hdfs dfs -ls /corpus/output
 ```
 
 The script waits for two live DataNodes and two registered YARN workers, generates synthetic line shards, uploads them to HDFS, runs the application, downloads results, inspects JSONL invariants, and audits task execution hosts through history APIs. The HDFS input uses replication factor two. `hdfs-blocks.txt`, `yarn-nodes.txt`, the manifest, inspection report and deployment audit form the evidence bundle in CI.
+
+All services share one image. Building the `namenode` target once and starting with `--no-build` avoids exporting the same image separately for every role.
 
 To retain the client-side evidence on your own machine, use a named client container:
 
