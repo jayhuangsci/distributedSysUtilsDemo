@@ -2,6 +2,7 @@
 target/
 demo-output/
 benchmark-output/
+cluster-evidence/
 *.log
 *.class
 *.jar

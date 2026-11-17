@@ -36,6 +36,19 @@ class TextPreparationTest {
         assertEquals(Hashes.sha256(left), Hashes.sha256(right));
     }
 
+    @Test void redactsIpv4BeforeSentencePunctuationWithoutMatchingInvalidAddresses() {
+        for (String punctuation : List.of(".", ",", ":", "!")) {
+            TextProcessor.Result result = TextProcessor.process("A synthetic host uses address 192.0.2.42" + punctuation + " Other explanatory words remain readable.", options());
+            assertEquals(1, result.redactions.get("ip"));
+            assertFalse(result.text.contains("192.0.2.42"));
+        }
+        assertEquals(0, TextProcessor.process("Invalid address 999.0.2.42 remains unclassified.", options()).redactions.get("ip"));
+    }
+
+    @Test void redactionLabelsDoNotTurnSensitiveOnlyNoiseIntoQualityText() {
+        assertEquals("LOW_LETTER_RATIO_DOCUMENTS", TextProcessor.process("person@example.invalid ".repeat(10), options()).rejection);
+    }
+
     @Test void qualityRulesHaveExplicitRejectionReasons() {
         assertEquals("EMPTY_DOCUMENTS", TextProcessor.process("<script>noise</script>", options()).rejection);
         PipelineOptions defaults = PipelineOptions.parse(new String[]{"--input", "i", "--output", "o"});
@@ -80,5 +93,12 @@ class TextPreparationTest {
         assertThrows(IllegalArgumentException.class, () -> options("--validation-percent", "101"));
         assertThrows(IllegalArgumentException.class, () -> options("--min-letter-ratio", "NaN"));
         assertThrows(IllegalArgumentException.class, () -> options("--max-document-bytes", "100000000"));
+    }
+
+    @Test void longNonEmailTokensDoNotTriggerUnboundedEmailBacktracking() {
+        assertTimeout(java.time.Duration.ofSeconds(4), () -> {
+            TextProcessor.Result result = TextProcessor.process("x".repeat(100000) + " explanatory words stay readable in this synthetic document", options());
+            assertEquals(0, result.redactions.get("email"));
+        });
     }
 }

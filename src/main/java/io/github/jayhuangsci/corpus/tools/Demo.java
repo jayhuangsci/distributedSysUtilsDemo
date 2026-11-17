@@ -3,7 +3,6 @@ package io.github.jayhuangsci.corpus.tools;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.jayhuangsci.corpus.hadoop.CorpusPipeline;
 import org.apache.hadoop.conf.Configuration;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.util.Map;
@@ -18,7 +17,7 @@ public final class Demo {
         conf.set("fs.defaultFS", "file:///"); conf.set("mapreduce.framework.name", "local");
         conf.setInt("mapreduce.task.io.sort.mb", 16);
         CorpusPipeline.run(conf, new String[]{"--input", input, "--output", output,
-                "--reducers", "2", "--chunk-tokens", "32", "--chunk-overlap", "8", "--validation-percent", "20"});
+                "--reducers", "2", "--chunk-tokens", "32", "--chunk-overlap", "8", "--validation-percent", "50"});
         Map<String, Object> report = CorpusInspector.inspect(Path.of(output));
         new ObjectMapper().writerWithDefaultPrettyPrinter().writeValue(Path.of(output, "_INSPECTION.json").toFile(), report);
         System.out.println("Demo inspection: " + report);

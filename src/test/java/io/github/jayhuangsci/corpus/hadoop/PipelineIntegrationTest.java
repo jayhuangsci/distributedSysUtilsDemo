@@ -80,6 +80,7 @@ class PipelineIntegrationTest {
                 assertFalse(record.path("text").asText().contains("@example.invalid"));
                 assertFalse(record.path("text").asText().contains("tracking()"));
                 assertFalse(record.path("text").asText().contains("202-555"));
+                assertFalse(record.path("text").asText().contains("192.0.2.42"));
                 assertTrue(record.path("token_count").asInt() <= 12);
             }
             assertEquals(20, expectedIds.size());

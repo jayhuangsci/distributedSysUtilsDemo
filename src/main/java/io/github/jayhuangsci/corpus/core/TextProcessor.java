@@ -13,10 +13,10 @@ import java.util.regex.Pattern;
 public final class TextProcessor {
     private static final Pattern HTML = Pattern.compile("(?is)<(?:!doctype|html|body|article|div|p|h[1-6]|script|style|nav)(?:[\\s>])");
     private static final Pattern URL = Pattern.compile("(?i)\\b(?:https?://|www\\.)[^\\s<>\"']+");
-    private static final Pattern EMAIL = Pattern.compile("(?i)[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,}");
+    private static final Pattern EMAIL = Pattern.compile("(?i)(?<![a-z0-9._%+-])[a-z0-9._%+-]{1,64}@[a-z0-9.-]{1,253}\\.[a-z]{2,63}(?![a-z])");
     private static final Pattern PHONE = Pattern.compile("(?<!\\d)(?:\\+?1[ .-]?)?\\(?[2-9]\\d{2}\\)?[ .-]?\\d{3}[ .-]?\\d{4}(?!\\d)");
     private static final String OCTET = "(?:25[0-5]|2[0-4]\\d|1?\\d?\\d)";
-    private static final Pattern IP = Pattern.compile("(?<![\\d.])" + OCTET + "(?:\\." + OCTET + "){3}(?![\\d.])");
+    private static final Pattern IP = Pattern.compile("(?<![\\d.])" + OCTET + "(?:\\." + OCTET + "){3}(?!\\d|\\.\\d)");
     private static final Pattern CARD = Pattern.compile("(?<!\\d)(?:\\d[ -]?){12,18}\\d(?!\\d)");
     private TextProcessor() { }
 
@@ -43,7 +43,8 @@ public final class TextProcessor {
         text = redact(text, IP, "IP", redactions, false);
         if (text.isEmpty()) { return new Result(text, redactions, "EMPTY_DOCUMENTS", 0); }
         if (text.length() < options.integer("min-chars")) { return new Result(text, redactions, "TOO_SHORT_DOCUMENTS", 0); }
-        long letters = text.codePoints().filter(Character::isLetter).count();
+        String withoutTags = text.replaceAll("\\[(?:EMAIL|PHONE|IP|CARD|URL)\\]", "");
+        long letters = withoutTags.codePoints().filter(Character::isLetter).count();
         long visible = text.codePoints().filter(c -> !Character.isWhitespace(c)).count();
         if ((double) letters / visible < options.letterRatio()) {
             return new Result(text, redactions, "LOW_LETTER_RATIO_DOCUMENTS", 0);

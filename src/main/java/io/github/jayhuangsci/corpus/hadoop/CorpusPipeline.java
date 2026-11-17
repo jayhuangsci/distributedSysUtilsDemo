@@ -82,6 +82,7 @@ public final class CorpusPipeline {
             export.setOutputKeyClass(NullWritable.class); export.setOutputValueClass(Text.class);
             LazyOutputFormat.setOutputFormatClass(export, JsonLineOutputFormat.class);
             MultipleOutputs.addNamedOutput(export, "corpus", JsonLineOutputFormat.class, NullWritable.class, Text.class);
+            FileOutputFormat.setCompressOutput(export, options.compression().equals("gzip"));
             if (options.compression().equals("gzip")) {
                 FileOutputFormat.setCompressOutput(export, true);
                 FileOutputFormat.setOutputCompressorClass(export, GzipCodec.class);
@@ -114,6 +115,9 @@ public final class CorpusPipeline {
                 TaskCounter.COMBINE_INPUT_RECORDS, TaskCounter.COMBINE_OUTPUT_RECORDS, TaskCounter.REDUCE_SHUFFLE_BYTES,
                 TaskCounter.REDUCE_INPUT_RECORDS, TaskCounter.REDUCE_OUTPUT_RECORDS}) {
             metrics.put(counter.name().toLowerCase(Locale.ROOT), job.getCounters().findCounter(counter).getValue());
+        }
+        for (String name : List.of("HDFS_BYTES_READ", "HDFS_BYTES_WRITTEN", "FILE_BYTES_READ", "FILE_BYTES_WRITTEN")) {
+            metrics.put(name.toLowerCase(Locale.ROOT), job.getCounters().findCounter("org.apache.hadoop.mapreduce.FileSystemCounter", name).getValue());
         }
         return metrics;
     }

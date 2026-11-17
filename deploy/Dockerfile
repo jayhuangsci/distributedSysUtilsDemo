@@ -10,8 +10,9 @@ RUN ./mvnw -B -q -DskipTests package
 FROM eclipse-temurin:11-jdk-jammy
 ARG HADOOP_VERSION=3.4.2
 RUN apt-get update && apt-get install -y --no-install-recommends curl procps ca-certificates && rm -rf /var/lib/apt/lists/*
-RUN curl --fail --location --retry 3 "https://archive.apache.org/dist/hadoop/common/hadoop-${HADOOP_VERSION}/hadoop-${HADOOP_VERSION}.tar.gz" -o /tmp/hadoop.tar.gz \
-    && curl --fail --location --retry 3 "https://archive.apache.org/dist/hadoop/common/hadoop-${HADOOP_VERSION}/hadoop-${HADOOP_VERSION}.tar.gz.sha512" -o /tmp/hadoop.sha512 \
+RUN (curl --fail --location --retry 2 --connect-timeout 15 --max-time 300 "https://dlcdn.apache.org/hadoop/common/hadoop-${HADOOP_VERSION}/hadoop-${HADOOP_VERSION}-lean.tar.gz" -o /tmp/hadoop.tar.gz \
+      || curl --fail --location --retry 2 --connect-timeout 15 --max-time 300 "https://archive.apache.org/dist/hadoop/common/hadoop-${HADOOP_VERSION}/hadoop-${HADOOP_VERSION}-lean.tar.gz" -o /tmp/hadoop.tar.gz) \
+    && curl --fail --location --retry 3 "https://archive.apache.org/dist/hadoop/common/hadoop-${HADOOP_VERSION}/hadoop-${HADOOP_VERSION}-lean.tar.gz.sha512" -o /tmp/hadoop.sha512 \
     && checksum=$(grep -Eo '[a-fA-F0-9]{128}' /tmp/hadoop.sha512 | head -n 1) \
     && test -n "$checksum" \
     && printf '%s  /tmp/hadoop.tar.gz\n' "$checksum" | sha512sum --check --status \
