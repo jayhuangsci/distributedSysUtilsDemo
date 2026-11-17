@@ -1,0 +1,81 @@
+x-hadoop: &hadoop
+  image: corpus-hadoop:local
+  build:
+    context: ..
+    dockerfile: deploy/Dockerfile
+  init: true
+
+services:
+  namenode:
+    <<: *hadoop
+    hostname: namenode
+    command: [namenode]
+    ports: ["127.0.0.1:9870:9870"]
+    volumes: ["namenode-data:/data"]
+    healthcheck:
+      test: [CMD-SHELL, "curl -fsS http://localhost:9870/ > /dev/null"]
+      interval: 5s
+      timeout: 4s
+      retries: 40
+  resourcemanager:
+    <<: *hadoop
+    hostname: resourcemanager
+    command: [resourcemanager]
+    ports: ["127.0.0.1:8088:8088"]
+    healthcheck:
+      test: [CMD-SHELL, "curl -fsS http://localhost:8088/ws/v1/cluster/info > /dev/null"]
+      interval: 5s
+      timeout: 4s
+      retries: 40
+  worker1:
+    <<: *hadoop
+    hostname: worker1
+    command: [worker]
+    depends_on: [namenode, resourcemanager]
+    volumes: ["worker1-data:/data"]
+    healthcheck:
+      test: [CMD-SHELL, "curl -fsS http://localhost:8042/ws/v1/node/info > /dev/null"]
+      interval: 5s
+      timeout: 4s
+      retries: 40
+  worker2:
+    <<: *hadoop
+    hostname: worker2
+    command: [worker]
+    depends_on: [namenode, resourcemanager]
+    volumes: ["worker2-data:/data"]
+    healthcheck:
+      test: [CMD-SHELL, "curl -fsS http://localhost:8042/ws/v1/node/info > /dev/null"]
+      interval: 5s
+      timeout: 4s
+      retries: 40
+  historyserver:
+    <<: *hadoop
+    hostname: historyserver
+    command: [historyserver]
+    depends_on:
+      namenode: {condition: service_healthy}
+      worker1: {condition: service_healthy}
+      worker2: {condition: service_healthy}
+    ports: ["127.0.0.1:19888:19888"]
+    healthcheck:
+      test: [CMD-SHELL, "curl -fsS http://localhost:19888/ws/v1/history/info > /dev/null"]
+      interval: 5s
+      timeout: 4s
+      retries: 40
+  client:
+    <<: *hadoop
+    hostname: client
+    profiles: [tools]
+    command: [bash]
+    depends_on:
+      namenode: {condition: service_healthy}
+      resourcemanager: {condition: service_healthy}
+      historyserver: {condition: service_healthy}
+      worker1: {condition: service_healthy}
+      worker2: {condition: service_healthy}
+
+volumes:
+  namenode-data:
+  worker1-data:
+  worker2-data:

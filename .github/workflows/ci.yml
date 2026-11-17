@@ -41,3 +41,32 @@ jobs:
             target/demo-smoke/
             target/files-demo/
             benchmark-output/
+  distributed:
+    name: Two-worker HDFS and YARN
+    runs-on: ubuntu-latest
+    needs: verify
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v6
+      - name: Start HDFS, YARN and history services
+        run: docker compose -f deploy/compose.yml up --detach --build --wait --wait-timeout 180
+      - name: Submit the corpus pipeline to YARN
+        run: docker compose -f deploy/compose.yml run --name corpus-demo-client client /opt/demo/cluster-demo.sh
+      - name: Collect distributed execution evidence
+        if: always()
+        run: |
+          mkdir -p target/cluster-evidence
+          docker cp corpus-demo-client:/app/evidence/. target/cluster-evidence/ || true
+          docker compose -f deploy/compose.yml logs --no-color > target/cluster-evidence/services.log
+          docker compose -f deploy/compose.yml exec -T worker1 tar -czf - /data/logs /var/log/hadoop > target/cluster-evidence/worker1-logs.tar.gz || true
+          docker compose -f deploy/compose.yml exec -T worker2 tar -czf - /data/logs /var/log/hadoop > target/cluster-evidence/worker2-logs.tar.gz || true
+      - uses: actions/upload-artifact@v6
+        if: always()
+        with:
+          name: distributed-execution-evidence
+          path: target/cluster-evidence/
+      - name: Stop the demo cluster
+        if: always()
+        run: |
+          docker rm -f corpus-demo-client || true
+          docker compose -f deploy/compose.yml down --volumes
